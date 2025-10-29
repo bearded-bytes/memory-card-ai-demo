@@ -7,6 +7,7 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
@@ -28,6 +29,7 @@ const MemoryGame = () => {
     setMoves(0);
     setGameStarted(true);
     setGameWon(false);
+    setTimeLeft(60);
   };
 
   // Handle card click
@@ -72,6 +74,38 @@ const MemoryGame = () => {
     document.body.style.padding = '0';
     document.body.style.overflow = 'auto';
   }, []);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!gameStarted || gameWon) return;
+    if (timeLeft <= 0) return;
+
+    const intervalId = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [gameStarted, gameWon, timeLeft]);
+
+  // Handle timeout loss
+  useEffect(() => {
+    if (!gameStarted) return;
+    if (gameWon) return;
+    if (timeLeft > 0) return;
+
+    // Notify and return to start screen
+    // Using alert for a simple notification per requirement
+    alert('Time\'s up! You did not complete the game in time.');
+
+    // Reset to start screen state
+    setGameStarted(false);
+    setCards([]);
+    setFlippedIndices([]);
+    setMatchedPairs([]);
+    setMoves(0);
+    setGameWon(false);
+    setTimeLeft(60);
+  }, [timeLeft, gameStarted, gameWon]);
 
   return (
     <div style={{
@@ -123,6 +157,7 @@ const MemoryGame = () => {
         }}>
           <div>Moves: {moves}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          <div>Time: {timeLeft}s</div>
         </div>
       )}
 
