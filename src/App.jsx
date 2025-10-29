@@ -7,9 +7,34 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState(null);
 
-  // Card emojis for the game
-  const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
+  // Available themes with emoji pairs
+  const themes = {
+    space: {
+      name: 'Space',
+      emojis: ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'],
+      icon: '🚀'
+    },
+    animals: {
+      name: 'Animals',
+      emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'],
+      icon: '🐶'
+    },
+    vehicles: {
+      name: 'Vehicles',
+      emojis: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑'],
+      icon: '🚗'
+    },
+    flags: {
+      name: 'Flags',
+      emojis: ['🇺🇸', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇪🇸', '🇯🇵', '🇨🇦'],
+      icon: '🇺🇸'
+    }
+  };
+
+  // Card emojis for the game - now based on selected theme
+  const cardSymbols = selectedTheme ? themes[selectedTheme].emojis : ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
 
   // Initialize game
   const initializeGame = () => {
@@ -177,61 +202,188 @@ const MemoryGame = () => {
         <div style={{
           textAlign: 'center'
         }}>
-          <button
-            onClick={initializeGame}
-            style={{
-              padding: '20px 40px',
-              fontSize: '24px',
-              background: 'white',
-              border: 'none',
-              borderRadius: '50px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              color: '#667eea',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-            }}
-          >
-            Start Game
-          </button>
+          {!selectedTheme ? (
+            <div>
+              <h2 style={{
+                color: 'white',
+                fontSize: '32px',
+                marginBottom: '30px',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                Choose a Theme
+              </h2>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '20px',
+                maxWidth: '500px'
+              }}>
+                {Object.keys(themes).map((themeKey) => (
+                  <button
+                    key={themeKey}
+                    onClick={() => setSelectedTheme(themeKey)}
+                    style={{
+                      padding: '30px',
+                      fontSize: '20px',
+                      background: 'white',
+                      border: 'none',
+                      borderRadius: '20px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      color: '#667eea',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                    }}
+                  >
+                    <span style={{ fontSize: '48px' }}>{themes[themeKey].icon}</span>
+                    <span>{themes[themeKey].name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p style={{
+                color: 'white',
+                fontSize: '24px',
+                marginBottom: '20px',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                Theme: {themes[selectedTheme].name} {themes[selectedTheme].icon}
+              </p>
+              <button
+                onClick={initializeGame}
+                style={{
+                  padding: '20px 40px',
+                  fontSize: '24px',
+                  background: 'white',
+                  border: 'none',
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  color: '#667eea',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                }}
+              >
+                Start Game
+              </button>
+              <button
+                onClick={() => setSelectedTheme(null)}
+                style={{
+                  marginTop: '15px',
+                  padding: '12px 30px',
+                  fontSize: '18px',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: '2px solid white',
+                  borderRadius: '50px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  transition: 'all 0.3s ease',
+                  display: 'block',
+                  margin: '15px auto 0'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.color = '#667eea';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.color = 'white';
+                }}
+              >
+                Change Theme
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* Reset Button */}
       {gameStarted && (
-        <button
-          onClick={initializeGame}
-          style={{
-            marginTop: '30px',
-            padding: '12px 30px',
-            fontSize: '18px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            border: '2px solid white',
-            borderRadius: '50px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            color: 'white',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'white';
-            e.currentTarget.style.color = '#667eea';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.color = 'white';
-          }}
-        >
-          Reset Game
-        </button>
+        <div style={{
+          display: 'flex',
+          gap: '15px',
+          marginTop: '30px'
+        }}>
+          <button
+            onClick={initializeGame}
+            style={{
+              padding: '12px 30px',
+              fontSize: '18px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '2px solid white',
+              borderRadius: '50px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              color: 'white',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'white';
+              e.currentTarget.style.color = '#667eea';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.color = 'white';
+            }}
+          >
+            Reset Game
+          </button>
+          <button
+            onClick={() => {
+              setGameStarted(false);
+              setSelectedTheme(null);
+              setCards([]);
+              setFlippedIndices([]);
+              setMatchedPairs([]);
+              setMoves(0);
+              setGameWon(false);
+            }}
+            style={{
+              padding: '12px 30px',
+              fontSize: '18px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '2px solid white',
+              borderRadius: '50px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              color: 'white',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'white';
+              e.currentTarget.style.color = '#667eea';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.color = 'white';
+            }}
+          >
+            Change Theme
+          </button>
+        </div>
       )}
 
       {/* Win Modal */}
