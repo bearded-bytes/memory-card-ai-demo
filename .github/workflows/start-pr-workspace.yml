@@ -42,7 +42,7 @@ jobs:
         uses: coder/start-workspace-action@v0.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          coder_username: nicky
+          coder-username: nicky
           coder-url: ${{ secrets.CODER_URL }}
           coder-token: ${{ secrets.CODER_TOKEN }}
           template-name: ${{ secrets.CODER_TEMPLATE_NAME }}
