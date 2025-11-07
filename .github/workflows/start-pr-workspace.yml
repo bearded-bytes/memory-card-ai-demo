@@ -1,14 +1,11 @@
 name: Start Workspace On Issue Creation or Comment
-
 on:
   issues:
     types: [opened]
   issue_comment:
     types: [created]
-
 permissions:
   issues: write
-
 jobs:
   comment:
     runs-on: ubuntu-latest
@@ -20,9 +17,32 @@ jobs:
     steps:
       - name: Start Coder workspace
         uses: coder/start-workspace-action@v0.1.0
+        continue-on-error: true
+        id: first_try
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           github-username: ${{ github.actor }}
+          coder-url: ${{ secrets.CODER_URL }}
+          coder-token: ${{ secrets.CODER_TOKEN }}
+          template-name: ${{ secrets.CODER_TEMPLATE_NAME }}
+          parameters: |-
+            AI Prompt: |
+              Use the gh CLI tool to read the details of issue https://github.com/${{ github.repository }}/issues/${{ github.event.issue.number }} and then address it.
+              
+              Then, submit a pull request. In the PR body, after your description, be sure to link:
+                - Your workspace URL in the body (e.g. https://dev.coder.com/@bpmct/brown-alpaca-18)
+                - A preview appp URL (e.g. https://nicky-pike.demo.coder.com/@nicky/pirate-cat-website.main/apps/preview/).
+                - The issue number you are fixing
+                Read the `env` vars in your workspace to get the proper username and workspace name.
+              
+                When comments occur, first respond and then start working on their feedback. Push your changes, then watch the PR.  End with a task stating "PR Submitted, waiting for approval"
+      
+      - name: Retry with direct username
+        if: steps.first_try.outcome == 'failure'
+        uses: coder/start-workspace-action@v0.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          username: nicky
           coder-url: ${{ secrets.CODER_URL }}
           coder-token: ${{ secrets.CODER_TOKEN }}
           template-name: ${{ secrets.CODER_TEMPLATE_NAME }}
