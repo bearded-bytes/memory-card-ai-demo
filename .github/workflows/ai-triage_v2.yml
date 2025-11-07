@@ -31,7 +31,7 @@ jobs:
     name: Triage GitHub Issue with Claude Code
     runs-on: ubuntu-latest
     environment: coder-demo  # Add this to access environment secrets
-    if: github.event.label.name == 'traiage' || github.event_name == 'workflow_dispatch'
+    if: github.event.label.name == 'ai-triage' || github.event_name == 'workflow_dispatch'
     timeout-minutes: 30
     env:
       CODER_URL: ${{ secrets.TRAIAGE_CODER_URL }}
