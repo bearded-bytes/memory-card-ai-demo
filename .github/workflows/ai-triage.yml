@@ -1,0 +1,71 @@
+name: AI Triage Automation
+
+on:
+  issues:
+    types:
+      - labeled
+  workflow_dispatch:
+    inputs:
+      issue_url:
+        description: "GitHub Issue URL to process"
+        required: true
+        type: string
+      template_name:
+        description: "Coder template to use for workspace"
+        required: true
+        default: "coder"
+        type: string
+      template_preset:
+        description: "Template preset to use"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  triage:
+    name: Triage GitHub Issue with Claude Code
+    runs-on: ubuntu-latest
+    if: github.event.label.name == 'traiage' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+      actions: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine inputs
+        id: inputs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_URL_INPUT: ${{ inputs.issue_url }}
+          ISSUE_URL_EVENT: ${{ github.event.issue.html_url }}
+          TEMPLATE_NAME: ${{ inputs.template_name || 'coder' }}
+          TEMPLATE_PRESET: ${{ inputs.template_preset || '' }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          ISSUE_AUTHOR: ${{ github.event.sender.login }}
+        run: |
+          # Determine issue URL based on trigger
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            echo "issue_url=${ISSUE_URL_INPUT}" >> "${GITHUB_OUTPUT}"
+            echo "github_user=${GITHUB_ACTOR}" >> "${GITHUB_OUTPUT}"
+          else
+            echo "issue_url=${ISSUE_URL_EVENT}" >> "${GITHUB_OUTPUT}"
+            echo "github_user=${ISSUE_AUTHOR}" >> "${GITHUB_OUTPUT}"
+          fi
+          
+          echo "template_name=${TEMPLATE_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "template_preset=${TEMPLATE_PRESET}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create Coder task
+        uses: coder/create-task-action@v1
+        with:
+          coder-url: ${{ secrets.TRAIAGE_CODER_URL }}
+          coder-token: ${{ secrets.TRAIAGE_CODER_SESSION_TOKEN }}
+          github-token: ${{ github.token }}
+          issue-url: ${{ steps.inputs.outputs.issue_url }}
+          template-name: ${{ steps.inputs.outputs.template_name }}
+          template-preset: ${{ steps.inputs.outputs.template_preset }}
+          github-user: ${{ steps.inputs.outputs.github_user }}
