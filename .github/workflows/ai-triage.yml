@@ -30,6 +30,7 @@ jobs:
   traiage:
     name: Triage GitHub Issue with Claude Code
     runs-on: ubuntu-latest
+    environment: coder-demo  # Add this to access environment secrets
     if: github.event.label.name == 'traiage' || github.event_name == 'workflow_dispatch'
     timeout-minutes: 30
     env:
