@@ -23,7 +23,7 @@ on:
       prefix:
         description: "Prefix for workspace name"
         required: false
-        default: "traiage"
+        default: "ai_triage"
         type: string
 
 jobs:
