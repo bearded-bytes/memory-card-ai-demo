@@ -7,6 +7,8 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [bestScore, setBestScore] = useState(null);
+  const [totalGames, setTotalGames] = useState(0);
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
@@ -30,6 +32,26 @@ const MemoryGame = () => {
     setGameWon(false);
   };
 
+  const recordWinStats = (moveCount) => {
+    setTotalGames((prev) => {
+      const next = prev + 1;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('memoryGameTotalGames', String(next));
+      }
+      return next;
+    });
+
+    setBestScore((prev) => {
+      if (prev === null || moveCount < prev) {
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('memoryGameBestScore', String(moveCount));
+        }
+        return moveCount;
+      }
+      return prev;
+    });
+  };
+
   // Handle card click
   const handleCardClick = (index) => {
     if (!gameStarted || gameWon) return;
@@ -41,16 +63,19 @@ const MemoryGame = () => {
     setFlippedIndices(newFlippedIndices);
 
     if (newFlippedIndices.length === 2) {
-      setMoves(moves + 1);
+      const updatedMoveCount = moves + 1;
+      setMoves(updatedMoveCount);
       const [firstIndex, secondIndex] = newFlippedIndices;
       
       if (cards[firstIndex].symbol === cards[secondIndex].symbol) {
         // Match found
-        setMatchedPairs([...matchedPairs, cards[firstIndex].symbol]);
+        const updatedMatchedPairs = [...matchedPairs, cards[firstIndex].symbol];
+        setMatchedPairs(updatedMatchedPairs);
         setFlippedIndices([]);
         
         // Check if game is won
-        if (matchedPairs.length + 1 === cardSymbols.length) {
+        if (updatedMatchedPairs.length === cardSymbols.length) {
+          recordWinStats(updatedMoveCount);
           setTimeout(() => setGameWon(true), 500);
         }
       } else {
@@ -71,6 +96,26 @@ const MemoryGame = () => {
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.overflow = 'auto';
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storedBest = window.localStorage.getItem('memoryGameBestScore');
+    const storedGames = window.localStorage.getItem('memoryGameTotalGames');
+
+    if (storedBest !== null) {
+      const parsedBest = parseInt(storedBest, 10);
+      if (!Number.isNaN(parsedBest)) {
+        setBestScore(parsedBest);
+      }
+    }
+
+    if (storedGames !== null) {
+      const parsedGames = parseInt(storedGames, 10);
+      if (!Number.isNaN(parsedGames)) {
+        setTotalGames(parsedGames);
+      }
+    }
   }, []);
 
   return (
@@ -112,19 +157,20 @@ const MemoryGame = () => {
       </div>
 
       {/* Stats */}
-      {gameStarted && (
-        <div style={{
-          display: 'flex',
-          gap: '30px',
-          marginBottom: '30px',
-          fontSize: '24px',
-          color: 'white',
-          fontWeight: 'bold'
-        }}>
-          <div>Moves: {moves}</div>
-          <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
-        </div>
-      )}
+      <div style={{
+        display: 'flex',
+        gap: '30px',
+        marginBottom: '30px',
+        fontSize: '24px',
+        color: 'white',
+        fontWeight: 'bold',
+        opacity: gameStarted ? 1 : 0.9
+      }}>
+        <div>Moves: {moves}</div>
+        <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+        <div>Best: {bestScore !== null ? `${bestScore} moves` : '--'}</div>
+        <div>Games Played: {totalGames}</div>
+      </div>
 
       {/* Game Board */}
       {gameStarted ? (
@@ -268,6 +314,20 @@ const MemoryGame = () => {
               color: '#333'
             }}>
               Completed in {moves} moves!
+            </p>
+            <p style={{
+              fontSize: '20px',
+              margin: '0 0 10px 0',
+              color: '#555'
+            }}>
+              Best Score: {bestScore !== null ? `${bestScore} moves` : '--'}
+            </p>
+            <p style={{
+              fontSize: '20px',
+              margin: '0 0 30px 0',
+              color: '#555'
+            }}>
+              Games Played: {totalGames}
             </p>
             <button
               onClick={initializeGame}
