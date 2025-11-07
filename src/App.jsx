@@ -7,9 +7,39 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('space');
 
-  // Card emojis for the game
-  const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
+  // Theme options with different emoji sets
+  const themes = {
+    space: {
+      name: 'Space',
+      emojis: ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'],
+      icon: '🚀'
+    },
+    animals: {
+      name: 'Animals',
+      emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'],
+      icon: '🐶'
+    },
+    vehicles: {
+      name: 'Vehicles',
+      emojis: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑'],
+      icon: '🚗'
+    },
+    flags: {
+      name: 'Flags',
+      emojis: ['🇺🇸', '🇬🇧', '🇨🇦', '🇦🇺', '🇯🇵', '🇰🇷', '🇧🇷', '🇲🇽'],
+      icon: '🏁'
+    },
+    food: {
+      name: 'Food',
+      emojis: ['🍕', '🍔', '🍟', '🌭', '🍿', '🥐', '🥨', '🥯'],
+      icon: '🍕'
+    }
+  };
+
+  // Get current theme's emojis
+  const cardSymbols = themes[selectedTheme].emojis;
 
   // Initialize game
   const initializeGame = () => {
@@ -119,8 +149,10 @@ const MemoryGame = () => {
           marginBottom: '30px',
           fontSize: '24px',
           color: 'white',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          alignItems: 'center'
         }}>
+          <div>Theme: {themes[selectedTheme].icon} {themes[selectedTheme].name}</div>
           <div>Moves: {moves}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
         </div>
@@ -177,6 +209,66 @@ const MemoryGame = () => {
         <div style={{
           textAlign: 'center'
         }}>
+          {/* Theme Selection */}
+          <div style={{
+            marginBottom: '30px'
+          }}>
+            <h2 style={{
+              color: 'white',
+              fontSize: '24px',
+              marginBottom: '20px',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+            }}>
+              Choose Your Theme
+            </h2>
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              {Object.entries(themes).map(([key, theme]) => (
+                <button
+                  key={key}
+                  onClick={() => setSelectedTheme(key)}
+                  style={{
+                    padding: '15px 25px',
+                    fontSize: '18px',
+                    background: selectedTheme === key
+                      ? 'white'
+                      : 'rgba(255, 255, 255, 0.2)',
+                    border: '2px solid white',
+                    borderRadius: '25px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    color: selectedTheme === key ? '#667eea' : 'white',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedTheme !== key) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedTheme !== key) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }
+                  }}
+                >
+                  <span style={{ fontSize: '24px' }}>{theme.icon}</span>
+                  <span>{theme.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Start Game Button */}
           <button
             onClick={initializeGame}
             style={{
