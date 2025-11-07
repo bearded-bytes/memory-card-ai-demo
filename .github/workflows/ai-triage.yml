@@ -173,6 +173,9 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+
       - name: Create Coder task
         id: create-task
         env:
