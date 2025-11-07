@@ -126,18 +126,29 @@ jobs:
         env:
           CODER_URL: ${{ secrets.TRAIAGE_CODER_URL }}
         run: |
-          if [ "${{ runner.arch }}" == "ARM64" ]; then
-            ARCH="arm64"
-          else
-            ARCH="amd64"
-          fi
+          # Map GitHub Actions runner arch to Coder binary arch
+          case "${{ runner.arch }}" in
+            X64)
+              ARCH="amd64"
+              ;;
+            ARM64)
+              ARCH="arm64"
+              ;;
+            *)
+              echo "Unsupported architecture: ${{ runner.arch }}"
+              exit 1
+              ;;
+          esac
+          
+          echo "Downloading Coder CLI for ${ARCH}..."
           mkdir -p "${HOME}/.local/bin"
-          curl -fsSL --compressed "$CODER_URL/bin/coder-linux-${ARCH}" -o "${HOME}/.local/bin/coder"
+          curl -fsSL --compressed "${CODER_URL}/bin/coder-linux-${ARCH}" -o "${HOME}/.local/bin/coder"
           chmod +x "${HOME}/.local/bin/coder"
-          export PATH="$HOME/.local/bin:$PATH"
-          coder version
-          coder whoami
           echo "$HOME/.local/bin" >> "${GITHUB_PATH}"
+          
+          # Verify installation
+          "${HOME}/.local/bin/coder" version
+          "${HOME}/.local/bin/coder" whoami
 
       - name: Get Coder username from GitHub actor
         id: get-coder-username
