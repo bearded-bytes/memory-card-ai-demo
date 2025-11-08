@@ -7,6 +7,28 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [bestScore, setBestScore] = useState(() => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    const stored = localStorage.getItem('memoryGameBestScore');
+    if (stored === null) {
+      return null;
+    }
+    const parsed = parseInt(stored, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  });
+  const [totalGames, setTotalGames] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 0;
+    }
+    const stored = localStorage.getItem('memoryGameTotalGames');
+    if (stored === null) {
+      return 0;
+    }
+    const parsed = parseInt(stored, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  });
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
@@ -28,6 +50,7 @@ const MemoryGame = () => {
     setMoves(0);
     setGameStarted(true);
     setGameWon(false);
+    setTotalGames((previous) => previous + 1);
   };
 
   // Handle card click
@@ -41,16 +64,24 @@ const MemoryGame = () => {
     setFlippedIndices(newFlippedIndices);
 
     if (newFlippedIndices.length === 2) {
-      setMoves(moves + 1);
+      const updatedMoves = moves + 1;
+      setMoves(updatedMoves);
       const [firstIndex, secondIndex] = newFlippedIndices;
       
       if (cards[firstIndex].symbol === cards[secondIndex].symbol) {
         // Match found
-        setMatchedPairs([...matchedPairs, cards[firstIndex].symbol]);
+        const updatedMatches = [...matchedPairs, cards[firstIndex].symbol];
+        setMatchedPairs(updatedMatches);
         setFlippedIndices([]);
         
         // Check if game is won
-        if (matchedPairs.length + 1 === cardSymbols.length) {
+        if (updatedMatches.length === cardSymbols.length) {
+          setBestScore((previous) => {
+            if (previous === null) {
+              return updatedMoves;
+            }
+            return Math.min(previous, updatedMoves);
+          });
           setTimeout(() => setGameWon(true), 500);
         }
       } else {
@@ -72,6 +103,26 @@ const MemoryGame = () => {
     document.body.style.padding = '0';
     document.body.style.overflow = 'auto';
   }, []);
+
+  useEffect(() => {
+    try {
+      if (bestScore === null) {
+        localStorage.removeItem('memoryGameBestScore');
+      } else {
+        localStorage.setItem('memoryGameBestScore', String(bestScore));
+      }
+    } catch (error) {
+      console.error('Failed to persist best score', error);
+    }
+  }, [bestScore]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('memoryGameTotalGames', String(totalGames));
+    } catch (error) {
+      console.error('Failed to persist total games', error);
+    }
+  }, [totalGames]);
 
   return (
     <div style={{
@@ -112,17 +163,25 @@ const MemoryGame = () => {
       </div>
 
       {/* Stats */}
-      {gameStarted && (
+      {(gameStarted || bestScore !== null || totalGames > 0) && (
         <div style={{
           display: 'flex',
-          gap: '30px',
+          gap: '25px',
           marginBottom: '30px',
-          fontSize: '24px',
+          fontSize: '20px',
           color: 'white',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          flexWrap: 'wrap',
+          justifyContent: 'center'
         }}>
-          <div>Moves: {moves}</div>
-          <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          {gameStarted && (
+            <>
+              <div>Moves: {moves}</div>
+              <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+            </>
+          )}
+          <div>Best Score: {bestScore !== null ? bestScore : '—'}</div>
+          <div>Total Games: {totalGames}</div>
         </div>
       )}
 
