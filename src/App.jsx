@@ -7,9 +7,34 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('space');
 
-  // Card emojis for the game
-  const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
+  // Theme configurations
+  const themes = {
+    space: {
+      name: 'Space',
+      symbols: ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌']
+    },
+    animals: {
+      name: 'Animals',
+      symbols: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼']
+    },
+    emoji: {
+      name: 'Emoji',
+      symbols: ['😀', '😎', '🤔', '😍', '🥳', '😴', '🤗', '😇']
+    },
+    vehicles: {
+      name: 'Vehicles',
+      symbols: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑']
+    },
+    flags: {
+      name: 'Flags',
+      symbols: ['🇺🇸', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇪🇸', '🇨🇦', '🇯🇵']
+    }
+  };
+
+  // Card emojis for the game based on selected theme
+  const cardSymbols = themes[selectedTheme].symbols;
 
   // Initialize game
   const initializeGame = () => {
@@ -119,8 +144,10 @@ const MemoryGame = () => {
           marginBottom: '30px',
           fontSize: '24px',
           color: 'white',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          alignItems: 'center'
         }}>
+          <div>Theme: {themes[selectedTheme].name}</div>
           <div>Moves: {moves}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
         </div>
@@ -177,6 +204,74 @@ const MemoryGame = () => {
         <div style={{
           textAlign: 'center'
         }}>
+          {/* Theme Selector */}
+          <div style={{
+            marginBottom: '30px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            padding: '30px',
+            borderRadius: '20px',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{
+              color: 'white',
+              fontSize: '24px',
+              marginBottom: '20px',
+              marginTop: '0'
+            }}>
+              Choose a Theme
+            </h3>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+              gap: '15px',
+              maxWidth: '600px'
+            }}>
+              {Object.keys(themes).map((themeKey) => (
+                <button
+                  key={themeKey}
+                  onClick={() => setSelectedTheme(themeKey)}
+                  style={{
+                    padding: '15px 20px',
+                    fontSize: '16px',
+                    background: selectedTheme === themeKey
+                      ? 'white'
+                      : 'rgba(255, 255, 255, 0.2)',
+                    border: selectedTheme === themeKey
+                      ? '3px solid white'
+                      : '2px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '15px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    color: selectedTheme === themeKey ? '#667eea' : 'white',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedTheme !== themeKey) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedTheme !== themeKey) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }
+                  }}
+                >
+                  <div style={{ fontSize: '32px' }}>
+                    {themes[themeKey].symbols[0]}
+                  </div>
+                  <div>{themes[themeKey].name}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             onClick={initializeGame}
             style={{
