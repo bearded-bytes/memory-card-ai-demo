@@ -138,40 +138,68 @@ const MemoryGame = () => {
           backdropFilter: 'blur(10px)',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
         }}>
-          {cards.map((card, index) => (
-            <div
-              key={card.id}
-              onClick={() => handleCardClick(index)}
-              style={{
-                width: '100px',
-                height: '100px',
-                background: isCardVisible(index, card.symbol) 
-                  ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                  : 'white',
-                borderRadius: '15px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '48px',
-                cursor: matchedPairs.includes(card.symbol) ? 'default' : 'pointer',
-                transform: isCardVisible(index, card.symbol) ? 'scale(1)' : 'scale(1)',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                userSelect: 'none',
-                opacity: matchedPairs.includes(card.symbol) ? 0.6 : 1
-              }}
-              onMouseEnter={(e) => {
-                if (!matchedPairs.includes(card.symbol) && !isCardVisible(index, card.symbol)) {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              {isCardVisible(index, card.symbol) ? card.symbol : '?'}
-            </div>
-          ))}
+          {cards.map((card, index) => {
+            const isVisible = isCardVisible(index, card.symbol);
+            const isMatched = matchedPairs.includes(card.symbol);
+
+            return (
+              <div
+                key={card.id}
+                onClick={() => handleCardClick(index)}
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  background: isVisible
+                    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    : 'linear-gradient(145deg, #ffffff 0%, #f3f4ff 100%)',
+                  border: isVisible ? 'none' : '3px solid rgba(230, 57, 70, 0.6)',
+                  borderRadius: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '48px',
+                  cursor: isMatched ? 'default' : 'pointer',
+                  transform: 'scale(1)',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                  userSelect: 'none',
+                  opacity: isMatched ? 0.6 : 1,
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isMatched && !isVisible) {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {isVisible && (
+                  <span style={{ position: 'relative', zIndex: 1 }}>
+                    {card.symbol}
+                  </span>
+                )}
+                {!isVisible && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: '55%',
+                      height: '55%',
+                      background: 'linear-gradient(135deg, #ffd6d6 0%, #e63946 100%)',
+                      transform: 'translate(-50%, -50%) rotate(45deg)',
+                      top: '50%',
+                      left: '50%',
+                      borderRadius: '12px',
+                      boxShadow: '0 6px 12px rgba(230, 57, 70, 0.35)',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div style={{
