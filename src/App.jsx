@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 const MemoryGame = () => {
+  const INITIAL_TIME = 60;
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(INITIAL_TIME);
+  const [gameLost, setGameLost] = useState(false);
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
@@ -26,8 +29,10 @@ const MemoryGame = () => {
     setFlippedIndices([]);
     setMatchedPairs([]);
     setMoves(0);
+    setTimeRemaining(INITIAL_TIME);
     setGameStarted(true);
     setGameWon(false);
+    setGameLost(false);
   };
 
   // Handle card click
@@ -66,6 +71,28 @@ const MemoryGame = () => {
   const isCardVisible = (index, symbol) => {
     return flippedIndices.includes(index) || matchedPairs.includes(symbol);
   };
+
+  useEffect(() => {
+    if (!gameStarted || gameWon) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setGameLost(true);
+          setGameStarted(false);
+          setCards([]);
+          setFlippedIndices([]);
+          setMatchedPairs([]);
+          setMoves(0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [gameStarted, gameWon]);
 
   useEffect(() => {
     document.body.style.margin = '0';
@@ -123,6 +150,7 @@ const MemoryGame = () => {
         }}>
           <div>Moves: {moves}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          <div>Time Left: {timeRemaining}s</div>
         </div>
       )}
 
@@ -177,6 +205,17 @@ const MemoryGame = () => {
         <div style={{
           textAlign: 'center'
         }}>
+          {gameLost && (
+            <p style={{
+              fontSize: '20px',
+              color: 'white',
+              marginBottom: '20px',
+              fontWeight: 'bold',
+              textShadow: '1px 1px 2px rgba(0,0,0,0.4)'
+            }}>
+              Time&apos;s up! Try again to beat the clock.
+            </p>
+          )}
           <button
             onClick={initializeGame}
             style={{
