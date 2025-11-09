@@ -7,6 +7,8 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [gameLost, setGameLost] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
@@ -26,13 +28,15 @@ const MemoryGame = () => {
     setFlippedIndices([]);
     setMatchedPairs([]);
     setMoves(0);
-    setGameStarted(true);
+    setTimeLeft(60);
     setGameWon(false);
+    setGameLost(false);
+    setGameStarted(true);
   };
 
   // Handle card click
   const handleCardClick = (index) => {
-    if (!gameStarted || gameWon) return;
+    if (!gameStarted || gameWon || gameLost) return;
     if (flippedIndices.length === 2) return;
     if (flippedIndices.includes(index)) return;
     if (matchedPairs.includes(cards[index].symbol)) return;
@@ -41,12 +45,12 @@ const MemoryGame = () => {
     setFlippedIndices(newFlippedIndices);
 
     if (newFlippedIndices.length === 2) {
-      setMoves(moves + 1);
+      setMoves(prev => prev + 1);
       const [firstIndex, secondIndex] = newFlippedIndices;
       
       if (cards[firstIndex].symbol === cards[secondIndex].symbol) {
         // Match found
-        setMatchedPairs([...matchedPairs, cards[firstIndex].symbol]);
+        setMatchedPairs(prev => [...prev, cards[firstIndex].symbol]);
         setFlippedIndices([]);
         
         // Check if game is won
@@ -66,6 +70,34 @@ const MemoryGame = () => {
   const isCardVisible = (index, symbol) => {
     return flippedIndices.includes(index) || matchedPairs.includes(symbol);
   };
+
+  useEffect(() => {
+    const timerActive = gameStarted && !gameWon && !gameLost && typeof timeLeft === 'number' && timeLeft > 0;
+
+    if (!timerActive) {
+      return;
+    }
+
+    const countdownId = setInterval(() => {
+      setTimeLeft(prev => (typeof prev === 'number' && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(countdownId);
+  }, [gameStarted, gameWon, gameLost, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft !== 0 || !gameStarted || gameWon || gameLost) {
+      return;
+    }
+
+    setGameLost(true);
+    setGameStarted(false);
+    setFlippedIndices([]);
+    setMatchedPairs([]);
+    setMoves(0);
+    setCards([]);
+    setTimeLeft(null);
+  }, [timeLeft, gameStarted, gameWon, gameLost]);
 
   useEffect(() => {
     document.body.style.margin = '0';
@@ -123,6 +155,7 @@ const MemoryGame = () => {
         }}>
           <div>Moves: {moves}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          <div>Time Left: {timeLeft}s</div>
         </div>
       )}
 
@@ -291,6 +324,68 @@ const MemoryGame = () => {
               }}
             >
               Play Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Lose Modal */}
+      {gameLost && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '40px',
+            borderRadius: '20px',
+            textAlign: 'center',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+          }}>
+            <h2 style={{
+              fontSize: '48px',
+              margin: '0 0 20px 0',
+              color: '#764ba2'
+            }}>
+              ⏰ Time's Up!
+            </h2>
+            <p style={{
+              fontSize: '24px',
+              margin: '0 0 30px 0',
+              color: '#333'
+            }}>
+              You ran out of time. Head back to the start screen to try again.
+            </p>
+            <button
+              onClick={() => setGameLost(false)}
+              style={{
+                padding: '15px 40px',
+                fontSize: '20px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                color: 'white',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              Back to Start
             </button>
           </div>
         </div>
