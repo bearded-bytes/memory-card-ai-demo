@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
+const STARTING_TIME_SECONDS = 60;
+
+const formatTime = (totalSeconds) => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const paddedMinutes = String(minutes).padStart(2, '0');
+  const paddedSeconds = String(seconds).padStart(2, '0');
+  return `${paddedMinutes}:${paddedSeconds}`;
+};
+
 const MemoryGame = () => {
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
@@ -7,6 +17,8 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(STARTING_TIME_SECONDS);
+  const [gameLost, setGameLost] = useState(false);
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
@@ -28,6 +40,8 @@ const MemoryGame = () => {
     setMoves(0);
     setGameStarted(true);
     setGameWon(false);
+    setTimeRemaining(STARTING_TIME_SECONDS);
+    setGameLost(false);
   };
 
   // Handle card click
@@ -66,6 +80,37 @@ const MemoryGame = () => {
   const isCardVisible = (index, symbol) => {
     return flippedIndices.includes(index) || matchedPairs.includes(symbol);
   };
+
+  useEffect(() => {
+    if (!gameStarted || gameWon || gameLost) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameStarted, gameWon, gameLost]);
+
+  useEffect(() => {
+    if (timeRemaining === 0 && gameStarted && !gameWon) {
+      setGameLost(true);
+      setGameStarted(false);
+      setCards([]);
+      setFlippedIndices([]);
+      setMatchedPairs([]);
+      setMoves(0);
+      setGameWon(false);
+      setTimeRemaining(0);
+    }
+  }, [timeRemaining, gameStarted, gameWon]);
 
   useEffect(() => {
     document.body.style.margin = '0';
@@ -123,6 +168,7 @@ const MemoryGame = () => {
         }}>
           <div>Moves: {moves}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          <div>Time: {formatTime(timeRemaining)}</div>
         </div>
       )}
 
@@ -177,6 +223,20 @@ const MemoryGame = () => {
         <div style={{
           textAlign: 'center'
         }}>
+          {gameLost && (
+            <div style={{
+              marginBottom: '20px',
+              padding: '15px 25px',
+              borderRadius: '15px',
+              background: 'rgba(0, 0, 0, 0.4)',
+              color: 'white',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+            }}>
+              Time&apos;s up! You did not complete the game in time.
+            </div>
+          )}
           <button
             onClick={initializeGame}
             style={{
