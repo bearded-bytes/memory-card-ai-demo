@@ -7,9 +7,39 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('space');
 
-  // Card emojis for the game
-  const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
+  // Available themes with their emoji sets
+  const themes = {
+    space: {
+      name: 'Space',
+      emojis: ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'],
+      icon: '🚀'
+    },
+    animals: {
+      name: 'Animals',
+      emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'],
+      icon: '🐶'
+    },
+    emojis: {
+      name: 'Emojis',
+      emojis: ['😀', '😂', '😍', '🤔', '😎', '🥳', '🤩', '😜'],
+      icon: '😀'
+    },
+    vehicles: {
+      name: 'Vehicles',
+      emojis: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑'],
+      icon: '🚗'
+    },
+    flags: {
+      name: 'Flags',
+      emojis: ['🇺🇸', '🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇪🇸', '🇯🇵', '🇨🇦'],
+      icon: '🇺🇸'
+    }
+  };
+
+  // Get current theme's emojis
+  const cardSymbols = themes[selectedTheme].emojis;
 
   // Initialize game
   const initializeGame = () => {
@@ -123,6 +153,69 @@ const MemoryGame = () => {
         }}>
           <div>Moves: {moves}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+        </div>
+      )}
+
+      {/* Theme Selector */}
+      {!gameStarted && (
+        <div style={{
+          marginBottom: '30px',
+          textAlign: 'center'
+        }}>
+          <h2 style={{
+            fontSize: '24px',
+            color: 'white',
+            marginBottom: '20px',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            Choose a Theme
+          </h2>
+          <div style={{
+            display: 'flex',
+            gap: '15px',
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+          }}>
+            {Object.entries(themes).map(([key, theme]) => (
+              <button
+                key={key}
+                onClick={() => setSelectedTheme(key)}
+                style={{
+                  padding: '15px 25px',
+                  fontSize: '18px',
+                  background: selectedTheme === key
+                    ? 'white'
+                    : 'rgba(255, 255, 255, 0.2)',
+                  border: selectedTheme === key
+                    ? '3px solid white'
+                    : '2px solid white',
+                  borderRadius: '15px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  color: selectedTheme === key ? '#667eea' : 'white',
+                  transition: 'all 0.3s ease',
+                  boxShadow: selectedTheme === key
+                    ? '0 6px 20px rgba(0,0,0,0.3)'
+                    : '0 4px 15px rgba(0,0,0,0.2)',
+                  transform: selectedTheme === key ? 'scale(1.05)' : 'scale(1)'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedTheme !== key) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedTheme !== key) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }
+                }}
+              >
+                {theme.icon} {theme.name}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
