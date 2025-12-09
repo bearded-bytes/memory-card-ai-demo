@@ -1,17 +1,16 @@
 name: Start Coder Task
 
-on:
-  issues:
-    types:
-      - labeled
-
 permissions:
   issues: write
 
+on:
+  issue_comment:
+    types: [created]
+
 jobs:
-  coder-create-task:
+  trigger-on-comment:
     runs-on: ubuntu-latest
-    if: github.event.label.name == 'coder'
+    if: startsWith(github.event.comment.body, '@coder')
     steps:
       - name: Coder Create Task
         uses: coder/create-task-action@v0.0.4
