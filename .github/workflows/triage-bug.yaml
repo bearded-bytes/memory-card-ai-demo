@@ -10,7 +10,7 @@ on:
 jobs:
   trigger-on-comment:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.comment.body, '@coder')
+    if: startsWith(github.event.comment.body, '@coder-contrib-bot')
     steps:
       - name: Coder Create Task
         uses: coder/create-task-action@v0.0.4
