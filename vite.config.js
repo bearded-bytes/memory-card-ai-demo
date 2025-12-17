@@ -12,6 +12,7 @@ export default defineConfig({
       'localhost',
       '.coder.com', // Allow all Coder.com subdomains
       '.ai.coder.com', // Allow all ai.coder.com subdomains
+      '.coderdemo.io' // Allow all coderdemo.io subdomains
     ]
   }
 })
