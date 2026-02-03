@@ -1,5 +1,29 @@
 import React, { useState, useEffect } from 'react';
 
+// Theme definitions
+const THEMES = {
+  space: {
+    name: 'Space',
+    emojis: ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'],
+    preview: '🚀'
+  },
+  animals: {
+    name: 'Animals',
+    emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'],
+    preview: '🐶'
+  },
+  vehicles: {
+    name: 'Vehicles',
+    emojis: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑'],
+    preview: '🚗'
+  },
+  flags: {
+    name: 'Flags',
+    emojis: ['🇺🇸', '🇬🇧', '🇨🇦', '🇩🇪', '🇫🇷', '🇮🇹', '🇪🇸', '🇯🇵'],
+    preview: '🇺🇸'
+  }
+};
+
 const MemoryGame = () => {
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
@@ -7,9 +31,10 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('space');
 
-  // Card emojis for the game
-  const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
+  // Card emojis for the game (from selected theme)
+  const cardSymbols = THEMES[selectedTheme].emojis;
 
   // Initialize game
   const initializeGame = () => {
@@ -175,8 +200,78 @@ const MemoryGame = () => {
         </div>
       ) : (
         <div style={{
-          textAlign: 'center'
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '30px',
+          alignItems: 'center'
         }}>
+          {/* Theme Selection */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            padding: '30px',
+            borderRadius: '20px',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+          }}>
+            <h2 style={{
+              color: 'white',
+              marginTop: '0',
+              marginBottom: '20px',
+              fontSize: '24px'
+            }}>
+              Choose Your Theme
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '15px'
+            }}>
+              {Object.entries(THEMES).map(([themeKey, theme]) => (
+                <button
+                  key={themeKey}
+                  onClick={() => setSelectedTheme(themeKey)}
+                  style={{
+                    padding: '20px 30px',
+                    fontSize: '18px',
+                    background: selectedTheme === themeKey
+                      ? 'white'
+                      : 'rgba(255, 255, 255, 0.2)',
+                    border: selectedTheme === themeKey
+                      ? '3px solid #FFD700'
+                      : '2px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '15px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    color: selectedTheme === themeKey ? '#667eea' : 'white',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    alignItems: 'center',
+                    minWidth: '150px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedTheme !== themeKey) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedTheme !== themeKey) {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }
+                  }}
+                >
+                  <span style={{ fontSize: '36px' }}>{theme.preview}</span>
+                  <span>{theme.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Start Game Button */}
           <button
             onClick={initializeGame}
             style={{
@@ -200,7 +295,7 @@ const MemoryGame = () => {
               e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
             }}
           >
-            Start Game
+            Start Game with {THEMES[selectedTheme].name} Theme
           </button>
         </div>
       )}
