@@ -7,9 +7,29 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [bestScore, setBestScore] = useState(null);
+  const [totalGamesPlayed, setTotalGamesPlayed] = useState(0);
+  const [isNewBest, setIsNewBest] = useState(false);
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
+
+  // localStorage keys
+  const BEST_SCORE_KEY = 'memoryGameBestScore';
+  const TOTAL_GAMES_KEY = 'memoryGameTotalPlays';
+
+  // Load stats from localStorage on mount
+  useEffect(() => {
+    const savedBestScore = localStorage.getItem(BEST_SCORE_KEY);
+    const savedTotalGames = localStorage.getItem(TOTAL_GAMES_KEY);
+
+    if (savedBestScore !== null) {
+      setBestScore(parseInt(savedBestScore, 10));
+    }
+    if (savedTotalGames !== null) {
+      setTotalGamesPlayed(parseInt(savedTotalGames, 10));
+    }
+  }, []);
 
   // Initialize game
   const initializeGame = () => {
@@ -21,13 +41,14 @@ const MemoryGame = () => {
         isFlipped: false,
         isMatched: false
       }));
-    
+
     setCards(shuffledCards);
     setFlippedIndices([]);
     setMatchedPairs([]);
     setMoves(0);
     setGameStarted(true);
     setGameWon(false);
+    setIsNewBest(false);
   };
 
   // Handle card click
@@ -51,7 +72,25 @@ const MemoryGame = () => {
         
         // Check if game is won
         if (matchedPairs.length + 1 === cardSymbols.length) {
-          setTimeout(() => setGameWon(true), 500);
+          setTimeout(() => {
+            const finalMoves = moves + 1;
+
+            // Update best score if this is better (lower) or first game
+            let newBest = false;
+            if (bestScore === null || finalMoves < bestScore) {
+              setBestScore(finalMoves);
+              localStorage.setItem(BEST_SCORE_KEY, finalMoves.toString());
+              newBest = true;
+            }
+            setIsNewBest(newBest);
+
+            // Increment total games played
+            const newTotal = totalGamesPlayed + 1;
+            setTotalGamesPlayed(newTotal);
+            localStorage.setItem(TOTAL_GAMES_KEY, newTotal.toString());
+
+            setGameWon(true);
+          }, 500);
         }
       } else {
         // No match, flip back after delay
@@ -122,7 +161,9 @@ const MemoryGame = () => {
           fontWeight: 'bold'
         }}>
           <div>Moves: {moves}</div>
+          <div>Best: {bestScore !== null ? `${bestScore} moves` : '--'}</div>
           <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          <div>Games: {totalGamesPlayed}</div>
         </div>
       )}
 
@@ -264,10 +305,27 @@ const MemoryGame = () => {
             </h2>
             <p style={{
               fontSize: '24px',
-              margin: '0 0 30px 0',
+              margin: '0 0 10px 0',
               color: '#333'
             }}>
               Completed in {moves} moves!
+            </p>
+            {isNewBest && (
+              <p style={{
+                fontSize: '20px',
+                margin: '0 0 10px 0',
+                color: '#667eea',
+                fontWeight: 'bold'
+              }}>
+                🏆 New Best Score! 🏆
+              </p>
+            )}
+            <p style={{
+              fontSize: '18px',
+              margin: '0 0 30px 0',
+              color: '#666'
+            }}>
+              Total games played: {totalGamesPlayed}
             </p>
             <button
               onClick={initializeGame}
