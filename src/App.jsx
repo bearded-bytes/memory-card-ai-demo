@@ -1,5 +1,28 @@
 import React, { useState, useEffect } from 'react';
 
+// localStorage utility functions
+const STATS_KEY = 'memoryGameStats';
+
+const loadStats = () => {
+  try {
+    const saved = localStorage.getItem(STATS_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error('Error loading stats:', error);
+  }
+  return { bestScore: null, totalGamesPlayed: 0 };
+};
+
+const saveStats = (stats) => {
+  try {
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+  } catch (error) {
+    console.error('Error saving stats:', error);
+  }
+};
+
 const MemoryGame = () => {
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
@@ -7,6 +30,9 @@ const MemoryGame = () => {
   const [moves, setMoves] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [bestScore, setBestScore] = useState(null);
+  const [totalGamesPlayed, setTotalGamesPlayed] = useState(0);
+  const [isNewBest, setIsNewBest] = useState(false);
 
   // Card emojis for the game
   const cardSymbols = ['🚀', '🛸', '⭐', '🌙', '🪐', '☄️', '🌟', '🌌'];
@@ -51,7 +77,25 @@ const MemoryGame = () => {
         
         // Check if game is won
         if (matchedPairs.length + 1 === cardSymbols.length) {
-          setTimeout(() => setGameWon(true), 500);
+          setTimeout(() => {
+            setGameWon(true);
+
+            // Update stats
+            const newTotalGames = totalGamesPlayed + 1;
+            const finalMoves = moves + 1;
+            const newBestScore = bestScore === null ? finalMoves : Math.min(bestScore, finalMoves);
+            const achievedNewBest = bestScore === null || finalMoves < bestScore;
+
+            setBestScore(newBestScore);
+            setTotalGamesPlayed(newTotalGames);
+            setIsNewBest(achievedNewBest);
+
+            // Save to localStorage
+            saveStats({
+              bestScore: newBestScore,
+              totalGamesPlayed: newTotalGames
+            });
+          }, 500);
         }
       } else {
         // No match, flip back after delay
@@ -66,6 +110,13 @@ const MemoryGame = () => {
   const isCardVisible = (index, symbol) => {
     return flippedIndices.includes(index) || matchedPairs.includes(symbol);
   };
+
+  // Load stats from localStorage on mount
+  useEffect(() => {
+    const stats = loadStats();
+    setBestScore(stats.bestScore);
+    setTotalGamesPlayed(stats.totalGamesPlayed);
+  }, []);
 
   useEffect(() => {
     document.body.style.margin = '0';
@@ -115,14 +166,30 @@ const MemoryGame = () => {
       {gameStarted && (
         <div style={{
           display: 'flex',
-          gap: '30px',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '15px',
           marginBottom: '30px',
-          fontSize: '24px',
-          color: 'white',
-          fontWeight: 'bold'
+          color: 'white'
         }}>
-          <div>Moves: {moves}</div>
-          <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          <div style={{
+            display: 'flex',
+            gap: '30px',
+            fontSize: '24px',
+            fontWeight: 'bold'
+          }}>
+            <div>Moves: {moves}</div>
+            <div>Matches: {matchedPairs.length}/{cardSymbols.length}</div>
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '30px',
+            fontSize: '18px',
+            opacity: 0.9
+          }}>
+            <div>Best: {bestScore !== null ? `${bestScore} moves` : '--'}</div>
+            <div>Games Played: {totalGamesPlayed}</div>
+          </div>
         </div>
       )}
 
@@ -264,11 +331,30 @@ const MemoryGame = () => {
             </h2>
             <p style={{
               fontSize: '24px',
-              margin: '0 0 30px 0',
+              margin: '0 0 10px 0',
               color: '#333'
             }}>
               Completed in {moves} moves!
             </p>
+            {isNewBest && (
+              <p style={{
+                fontSize: '20px',
+                margin: '0 0 20px 0',
+                color: '#667eea',
+                fontWeight: 'bold'
+              }}>
+                🌟 New Best Score! 🌟
+              </p>
+            )}
+            {!isNewBest && bestScore !== null && (
+              <p style={{
+                fontSize: '16px',
+                margin: '0 0 20px 0',
+                color: '#666'
+              }}>
+                Best: {bestScore} moves
+              </p>
+            )}
             <button
               onClick={initializeGame}
               style={{
