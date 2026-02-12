@@ -1,16 +1,15 @@
 name: Start Coder Task
-
 permissions:
   issues: write
-
 on:
   issue_comment:
     types: [created]
-
+  issues:
+    types: [labeled]
 jobs:
   trigger-on-comment:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.comment.body, '@coder-contrib-bot')
+    if: github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '@coder')
     steps:
       - name: Coder Create Task
         uses: coder/create-task-action@v0.0.4
@@ -18,9 +17,26 @@ jobs:
           coder-url: ${{ secrets.CODER_URL }}
           coder-token: ${{ secrets.CODER_TOKEN }}
           coder-organization: "coder"
-          coder-template-name: "memorycard"
+          coder-template-name: ${{ secrets.CODER_TEMPLATE }}
           coder-task-name-prefix: "gh-task"
-          coder-task-prompt: "Use the gh CLI to read ${{ github.event.issue.html_url }}, write an appropriate plan for solving the issue to PLAN.md, and then wait for feedback."
+          coder-task-prompt: "Use the gh CLI to read ${{ github.event.issue.html_url }}, write an appropriate plan for solving the issue to PLAN.md, implement plan, then submit a pr on completion."
+          github-user-id: ${{ github.event.sender.id }}
+          github-issue-url: ${{ github.event.issue.html_url }}
+          github-token: ${{ github.token }}
+          comment-on-issue: true
+  trigger-on-label:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.label.name == 'ai-triage'
+    steps:
+      - name: Coder Create Task
+        uses: coder/create-task-action@v0.0.4
+        with:
+          coder-url: ${{ secrets.CODER_URL }}
+          coder-token: ${{ secrets.CODER_TOKEN }}
+          coder-organization: "coder"
+          coder-template-name: ${{ secrets.CODER_TEMPLATE }}
+          coder-task-name-prefix: "gh-task"
+          coder-task-prompt: "Use the gh CLI to read ${{ github.event.issue.html_url }}, write an appropriate plan for solving the issue to PLAN.md, implement plan, then submit a pr on completion."
           github-user-id: ${{ github.event.sender.id }}
           github-issue-url: ${{ github.event.issue.html_url }}
           github-token: ${{ github.token }}
